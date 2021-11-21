@@ -128,7 +128,7 @@ abstract class FilePicker extends PlatformInterface {
   /// [dialogTitle] can be set to display a custom title on desktop platforms. It will be ignored on Web & IO.
   /// 
   /// [initialDirectory] can be optionally set to select the directory where the
-  /// dialog is opened.
+  /// dialog is opened. On Windows, [initialDirectory] is not supported.
   ///
   /// Note: Some Android paths are protected, hence can't be accessed and will return `/` instead.
   Future<String?> getDirectoryPath({
