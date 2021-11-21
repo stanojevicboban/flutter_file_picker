@@ -3,11 +3,13 @@ import 'package:file_picker/src/file_picker.dart';
 import 'package:file_picker/src/file_picker_result.dart';
 import 'package:file_picker/src/platform_file.dart';
 import 'package:file_picker/src/utils.dart';
+import 'package:path/path.dart' as p;
 
 class FilePickerLinux extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     Function(FilePickerStatus)? onFileLoading,
@@ -24,6 +26,7 @@ class FilePickerLinux extends FilePicker {
     final List<String> arguments = generateCommandLineArguments(
       dialogTitle ?? defaultDialogTitle,
       fileFilter: fileFilter,
+      initialDirectory: initialDirectory ?? '',
       multipleFiles: allowMultiple,
       pickDirectory: false,
     );
@@ -51,10 +54,12 @@ class FilePickerLinux extends FilePicker {
   @override
   Future<String?> getDirectoryPath({
     String? dialogTitle,
+    String? initialDirectory,
   }) async {
     final executable = await _getPathToExecutable();
     final arguments = generateCommandLineArguments(
       dialogTitle ?? defaultDialogTitle,
+      initialDirectory: initialDirectory ?? '',
       pickDirectory: true,
     );
     return await runExecutableWithArguments(executable, arguments);
@@ -64,6 +69,7 @@ class FilePickerLinux extends FilePicker {
   Future<String?> saveFile({
     String? dialogTitle,
     String? fileName,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
   }) async {
@@ -76,6 +82,7 @@ class FilePickerLinux extends FilePicker {
       dialogTitle ?? defaultDialogTitle,
       fileFilter: fileFilter,
       fileName: fileName ?? '',
+      initialDirectory: initialDirectory ?? '',
       saveFile: true,
     );
     return await runExecutableWithArguments(executable, arguments);
@@ -119,6 +126,7 @@ class FilePickerLinux extends FilePicker {
     String dialogTitle, {
     String fileFilter = '',
     String fileName = '',
+    String initialDirectory = '',
     bool multipleFiles = false,
     bool pickDirectory = false,
     bool saveFile = false,
@@ -127,9 +135,14 @@ class FilePickerLinux extends FilePicker {
 
     if (saveFile) {
       arguments.add('--save');
-      if (fileName.isNotEmpty) {
-        arguments.add('--filename=$fileName');
-      }
+    }
+
+    if (fileName.isNotEmpty && initialDirectory.isNotEmpty) {
+      arguments.add('--filename=${p.join(initialDirectory, fileName)}');
+    } else if (fileName.isNotEmpty) {
+      arguments.add('--filename=$fileName');
+    } else if (initialDirectory.isNotEmpty) {
+      arguments.add('--filename=$initialDirectory');
     }
 
     if (fileFilter.isNotEmpty) {
